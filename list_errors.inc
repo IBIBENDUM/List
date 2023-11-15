@@ -1,5 +1,11 @@
 DEF_LIST_ERR(LIST_NO_ERR, "There is no error!")
 DEF_LIST_ERR(LIST_NULL_PTR, "List pointer is NULL")
+DEF_LIST_ERR(LIST_NULL_DATA_ARR_PTR, "Data array pointer is NULL")
+DEF_LIST_ERR(LIST_NULL_PREV_ARR_PTR, "Prev array pointer is NULL")
+DEF_LIST_ERR(LIST_NULL_NEXT_ARR_PTR, "Next array pointer is NULL")
 DEF_LIST_ERR(LIST_MEM_ALLOC_ERR, "Error at memory allocation")
 DEF_LIST_ERR(LIST_NULL_LOG_FILE_PTR_ERR, "NULL log file pointer")
+DEF_LIST_ERR(LIST_NEGATIVE_FREE_IDX, "Negative free element index")
+DEF_LIST_ERR(LIST_FREE_IDX_OUT_OF_RANGE, "List index is out of range")
+DEF_LIST_ERR(LIST_FREE_IDX, "Element is free")
 #undef DEF_LIST_ERR
