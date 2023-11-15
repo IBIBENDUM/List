@@ -1,0 +1,24 @@
+digraph G{
+rankdir = LR;
+bgcolor = "#FFFFFF";
+-1 [shape = Mrecord, style = filled, fillcolor = "#FFE4C4", color = "#800000", label = "{PRV: -1|{IP: -1|DATA: 0} |NXT: -1}"];
+0 [shape = Mrecord, style = filled, fillcolor = "#FFE4C4", color = "#800000", label = "{PRV: -2|{IP: 0|DATA: 2} |NXT: 1}"];
+1 [shape = Mrecord, style = filled, fillcolor = "#FFE4C4", color = "#800000", label = "{PRV: -2|{IP: 1|DATA: 6} |NXT: 2}"];
+2 [shape = Mrecord, style = filled, fillcolor = "#FFE4C4", color = "#800000", label = "{PRV: -2|{IP: 2|DATA: 3} |NXT: 3}"];
+3 [shape = Mrecord, style = filled, fillcolor = "#FFE4C4", color = "#800000", label = "{PRV: -2|{IP: 3|DATA: 0} |NXT: 4}"];
+4 [shape = Mrecord, style = filled, fillcolor = "#FFE4C4", color = "#800000", label = "{PRV: -2|{IP: 4|DATA: 0} |NXT: 5}"];
+5 [shape = Mrecord, style = filled, fillcolor = "#FFE4C4", color = "#800000", label = "{PRV: -2|{IP: 5|DATA: 0} |NXT: 6}"];
+6 [shape = Mrecord, style = filled, fillcolor = "#FFE4C4", color = "#800000", label = "{PRV: -2|{IP: 6|DATA: 0} |NXT: 7}"];
+7 [shape = Mrecord, style = filled, fillcolor = "#FFE4C4", color = "#800000", label = "{PRV: -2|{IP: 7|DATA: 0} |NXT: -1}"];
+-1 -> 0 -> 1 -> 2 -> 3 -> 4 -> 5 -> 7 [color = "#FFFFFF", weight = 0]
+-1 -> -1 [color = "#00FF00", weight = 0]
+0 -> 1 [color = "#00FF00", weight = 0]
+1 -> 2 [color = "#00FF00", weight = 0]
+2 -> 3 [color = "#00FF00", weight = 0]
+3 -> 4 [color = "#00FF00", weight = 0]
+4 -> 5 [color = "#00FF00", weight = 0]
+5 -> 6 [color = "#00FF00", weight = 0]
+6 -> 7 [color = "#00FF00", weight = 0]
+7 -> -1 [color = "#00FF00", weight = 0]
+
+}
