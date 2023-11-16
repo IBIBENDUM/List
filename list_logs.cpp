@@ -22,23 +22,76 @@ const size_t GRAPH_MAX_PATH_LEN = 128;
 FILE* log_file_ptr = NULL;
 size_t graph_idx = 1;
 
-static void write_node(const List* list, FILE* file_ptr)
+static void write_node_info(FILE* file_ptr, const List* list, const int idx)
+{
+    if (list->prev[idx] == LIST_PREV_POISON)
+        print("\"{PRV: FREE|");
+    else
+        print("\"{PRV: %d|", list->prev[idx]);
+
+    if (idx == LIST_HEAD_INDEX)
+        print("{HEAD|");
+    else
+        print("{ID: %d|", idx);
+
+    if (list->data[idx] == LIST_POISON_VALUE)
+        print("DATA: FREE} ");
+    else
+        print("DATA: %d} ", list->data[idx]);
+
+    if (list->next[idx] == LIST_HEAD_INDEX)
+        print("|NXT: HEAD}\"];\n");
+    else
+        print("|NXT: %d}\"];\n", list->next[idx]);
+}
+
+static void write_node_settings(FILE* file_ptr)
+{
+    assert(file_ptr);
+
+    print("[shape = Mrecord, style = filled, fillcolor = \"#" COLOR_FORMAT "\", color = \"#" COLOR_FORMAT "\", label = ",
+          FILL_COLOR, OUTLINE_COLOR);
+}
+
+static void write_node(FILE* file_ptr, const List* list)
 {
     assert(list);
     assert(file_ptr);
 
-    for (int i = -1; i < list->capacity; i++)
+    for (int idx = -1; idx < list->capacity; idx++)
     {
-        print("%d [shape = Mrecord, style = filled, fillcolor = \"#" COLOR_FORMAT "\", color = \"#" COLOR_FORMAT "\", label = \"{PRV: %d|{IP: %d|DATA: %d} |NXT: %d}\"];\n",
-        i, FILL_COLOR, OUTLINE_COLOR, list->prev[i], i, list->data[i], list->next[i]);
+        print("%d", idx);
+        write_node_settings(file_ptr);
+        write_node_info(file_ptr, list, idx);
     }
 }
 
-static void link_nodes_straight(const List* list, FILE* file_ptr)
+static void write_head_info(FILE* file_ptr, const List* list)
+{
+    assert(file_ptr);
+    assert(list);
+
+   print("\"{CAPACITY: %d}|{SIZE: %d}|{IS_SORTED: %s}|{FREE_IDX: %d}\"]",
+          list->capacity, list->size, (list->is_sorted)? "true" : "false", list->free);
+}
+
+static void write_head_node(FILE* file_ptr, const List* list)
 {
     assert(list);
     assert(file_ptr);
 
+    print("HEAD");
+    write_node_settings(file_ptr);
+    write_head_info(file_ptr, list);
+    print("\n");
+}
+
+static void link_nodes_straight(FILE* file_ptr, const List* list)
+{
+    assert(list);
+    assert(file_ptr);
+
+    print("HEAD -> ");
     for (int i = -1; i < list->capacity - 1; i++)
     {
         print("%d -> ", i);
@@ -47,7 +100,7 @@ static void link_nodes_straight(const List* list, FILE* file_ptr)
     print(NODE_SETTINGS_FORMAT, BG_COLOR, 1000);
 }
 
-static void link_nodes_forward(const List* list, FILE* file_ptr)
+static void link_nodes_forward(FILE* file_ptr, const List* list)
 {
     assert(list);
     assert(file_ptr);
@@ -60,7 +113,7 @@ static void link_nodes_forward(const List* list, FILE* file_ptr)
     print("\n");
 }
 
-static void link_nodes_backward(const List* list, FILE* file_ptr)
+static void link_nodes_backward(FILE* file_ptr, const List* list)
 {
     assert(list);
     assert(file_ptr);
@@ -78,13 +131,13 @@ static void link_nodes_backward(const List* list, FILE* file_ptr)
 static list_error create_log_folders()
 {
     if (!create_folder(LOG_FOLDER_NAME))
-        return LIST_COULDNT_CREATE_LOG_FOLDER;
+        return LIST_CREATE_LOG_FOLDER_ERR;
 
     if (!create_folder(LOG_FOLDER_NAME "/" LOG_IMGS_FOLDER_NAME))
-        return LIST_COULDNT_CREATE_LOG_FOLDER;
+        return LIST_CREATE_LOG_FOLDER_ERR;
 
     if (!create_folder(LOG_FOLDER_NAME "/" LOG_DOTS_FOLDER_NAME))
-        return LIST_COULDNT_CREATE_LOG_FOLDER;
+        return LIST_CREATE_LOG_FOLDER_ERR;
 
     return LIST_NO_ERR;
 }
@@ -148,11 +201,11 @@ list_error generate_graph(const List* list)
         return err;
 
     write_graph_header(file_ptr);
-
-    write_node(list, file_ptr);
-    link_nodes_straight(list, file_ptr);
-    link_nodes_forward(list, file_ptr);
-    link_nodes_backward(list, file_ptr);
+    write_head_node(file_ptr, list);
+    write_node(file_ptr, list);
+    link_nodes_straight(file_ptr, list);
+    link_nodes_forward(file_ptr, list);
+    link_nodes_backward(file_ptr, list);
 
     print("}\n");
 

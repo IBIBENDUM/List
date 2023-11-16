@@ -15,7 +15,11 @@
             return err;                     \
     } while (0)
 
-// BAH: make bitmask
+const char* get_error_string(list_error err)
+{
+    return list_error_strings[err];
+}
+
 list_error list_verify(const List* list)
 {
     if (list == NULL)
@@ -29,6 +33,12 @@ list_error list_verify(const List* list)
 
     if (list->next == NULL)
         return LIST_NULL_NEXT_ARR_PTR;
+
+    if (list->size < 0)
+        return LIST_NEGATIVE_SIZE_ERR;
+
+    if (list->capacity < 0)
+        return LIST_NEGATIVE_CAPACITY_ERR;
 
     if (list->free < 0)
         return LIST_NEGATIVE_FREE_IDX;
@@ -45,7 +55,7 @@ static void list_init_reserved_elem(List* list)
 
     list->next[LIST_HEAD_INDEX] = (list->size)? 0 : LIST_HEAD_INDEX;
     list->data[LIST_HEAD_INDEX] = 0;
-    list->prev[LIST_HEAD_INDEX] = (list->size)? list->size : LIST_HEAD_INDEX;
+    list->prev[LIST_HEAD_INDEX] = (list->size)? list->size - 1 : LIST_HEAD_INDEX;
 }
 
 static void list_fill_with_poison(List* list, int start_idx)
@@ -66,7 +76,7 @@ list_error list_init(List* list)
     if (!list)
         return LIST_NULL_PTR;
 
-    *list = (List)  {};
+    *list = (List)  {.is_sorted = true};
 
     list_error err = list_realloc(list, LIST_MIN_CAPACITY);
     if (err != LIST_NO_ERR)
@@ -81,7 +91,7 @@ list_error list_init(List* list)
 
 static int list_get_free_node_idx(List* list)
 {
-    LIST_VERIFY_AND_RETURN_IF_ERR(list);
+    assert(list);
 
     const int idx = list->free;
     list->free    = list->next[idx];
@@ -92,8 +102,6 @@ static int list_get_free_node_idx(List* list)
 list_error list_realloc(List* list, int new_capacity)
 {
     assert(list);
-    if (new_capacity < list->capacity)
-        return LIST_WRONG_NEW_CAPACITY;
 
     elem_t* old_data_ptr = (list->capacity == 0)? NULL : list->data - 1;
     int*    old_prev_ptr = (list->capacity == 0)? NULL : list->prev - 1;
@@ -119,14 +127,41 @@ list_error list_realloc(List* list, int new_capacity)
     int old_capacity = list->capacity;
     list->capacity = new_capacity;
 
+    list->next[old_capacity - 1] = old_capacity;
     list_fill_with_poison(list, old_capacity);
 
     return LIST_NO_ERR;
 }
 
+static list_error resize_down(List* list)
+{
+    assert(list);
+    list_error err = LIST_NO_ERR;
+    err = list_linearize(list);
+    err = list_realloc(list, (int)((float)list->capacity / LIST_CAPACITY_MULTIPLIER));
+
+    return err;
+}
+
+static list_error resize_up(List* list)
+{
+    assert(list);
+    list_error err = LIST_NO_ERR;
+    err = list_realloc(list, (int)((float)list->capacity * LIST_CAPACITY_MULTIPLIER));
+
+    return err;
+}
+
 list_error list_insert_after(List* list, const int idx, const elem_t value)
 {
     LIST_VERIFY_AND_RETURN_IF_ERR(list);
+
+    list_error err = LIST_NO_ERR;
+    if (list->size + 1 >= list->capacity)
+        resize_up(list);
+
+    if (err != LIST_NO_ERR)
+        return err;
 
     const int free_idx = list_get_free_node_idx(list);
     int* next_free = &list->next[idx];
@@ -139,6 +174,9 @@ list_error list_insert_after(List* list, const int idx, const elem_t value)
     *next_free = free_idx;
 
     list->size++;
+
+    if (list->next[LIST_HEAD_INDEX] != 0)
+        list->is_sorted = false;
 
     list_log(list);
 
@@ -162,7 +200,7 @@ list_error list_push_back(List* list, const elem_t value)
 
 static bool is_free_elem(List* list, const int idx)
 {
-    LIST_VERIFY_AND_RETURN_IF_ERR(list);
+    assert(list);
     if (list->prev[idx] == LIST_PREV_POISON)
         return true;
 
@@ -187,6 +225,15 @@ list_error list_delete_elem(List* list, const int idx)
 
     if (is_free_elem(list, idx))
         return LIST_FREE_IDX;
+
+    list_error err = LIST_NO_ERR;
+    if (list->size * (int)(LIST_CAPACITY_MULTIPLIER * LIST_CAPACITY_MULTIPLIER) < list->capacity)
+        err = resize_down(list);
+
+    if (err != LIST_NO_ERR)
+        return err;
+
+    list->is_sorted = false;
 
     const int prev_idx   = list->prev[idx];
     const int next_idx   = list->next[idx];
@@ -236,23 +283,12 @@ list_error list_destruct(List* list)
     return LIST_NO_ERR;
 }
 
-// static void list_linearize_indexes(List* list)
-// {
-//     assert(list);
-//
-//     int physical_idx = list->next[LIST_HEAD_INDEX];
-//     for (int idx = 0; idx < list->size; idx++)
-//     {
-//         list->prev[idx] = idx - 1;
-//         list->data[idx] = list->data[physical_idx];
-//         list->next[idx] = idx + 1;
-//         physical_idx    = list->next[physical_idx];
-//     }
-// }
-
 list_error list_linearize(List* list)
 {
     LIST_VERIFY_AND_RETURN_IF_ERR(list);
+
+    if (list->is_sorted)
+        return LIST_NO_ERR;
 
     int*    new_prev_ptr = (int*)    calloc(list->capacity + 1, sizeof(new_prev_ptr[0]));
     elem_t* new_data_ptr = (elem_t*) calloc(list->capacity + 1, sizeof(new_data_ptr[0]));
@@ -266,7 +302,6 @@ list_error list_linearize(List* list)
 
         return LIST_MEM_ALLOC_ERR;
     }
-
     new_prev_ptr++;
     new_data_ptr++;
     new_next_ptr++;
@@ -277,18 +312,22 @@ list_error list_linearize(List* list)
         new_prev_ptr[idx] = idx - 1;
         new_data_ptr[idx] = list->data[physical_idx];
         new_next_ptr[idx] = idx + 1;
-        physical_idx = list->next[physical_idx];
+        physical_idx      = list->next[physical_idx];
     }
+    free_and_null(list->data - 1);
+    free_and_null(list->prev - 1);
+    free_and_null(list->next - 1);
 
     list->data = new_data_ptr;
     list->prev = new_prev_ptr;
     list->next = new_next_ptr;
 
-    // list_linearize_indexes(list);
     list_fill_with_poison(list, list->size);
     list_init_reserved_elem(list);
 
-    list->next[list->size - 1] = LIST_HEAD_INDEX;
+    list->next[list->size - 1] = L  IST_HEAD_INDEX;
+    list->free = list->size;
+    list->is_sorted = true;
 
     list_log(list);
 

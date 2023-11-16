@@ -4,25 +4,28 @@
 
 int main()
 {
-    list_open_log_file();
+    list_error err = LIST_NO_ERR;
+    err = list_open_log_file();
 
     List list = {};
 
     add_log_file(stderr, LOG_LVL_TRACE);
 
-    list_init(&list);
-    // list_realloc(&list, 12);
+    err = list_init(&list);
+    err = list_realloc(&list, 40);
+    err = list_push_back(&list, 2);
+    err = list_push_back(&list, 2);
+    err = list_delete_elem(&list, 0);
+    err = list_linearize(&list);
+    err = list_push_back(&list, 2);
+    err = list_push_back(&list, 3);
+    err = list_push_front(&list, 5);
 
-    list_push_front(&list, 1);
-    list_push_back(&list, 2);
-    list_push_back(&list, 3);
-    list_push_front(&list, 5);
-    list_linearize(&list);
-//     list_push_back(&list, 4);
-//
-//     list_delete_elem(&list, 0);
-//
-//     list_log(&list);
+
+    if (err != LIST_NO_ERR)
+        LOG_ERROR("%s\n", get_error_string(err));
+    else
+        LOG_INFO("%s\n", get_error_string(err));
 
     list_close_log_file();
 

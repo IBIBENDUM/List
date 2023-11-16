@@ -7,6 +7,8 @@
 typedef int elem_t;
 #define ELEM_FORMAT "%d"
 
+const float  LIST_CAPACITY_MULTIPLIER = 2;
+
 const size_t LIST_MIN_CAPACITY = 8;
 const elem_t LIST_POISON_VALUE = INT_MAX;
 const int    LIST_PREV_POISON  = -2; // ???
@@ -20,12 +22,12 @@ enum list_error
     // There is undef inside "list_errors.inc"
 };
 
-// const char* list_error_strings[]
-// {
-//     #define DEF_LIST_ERR(NAME, MESSAGE, ...) MESSAGE,
-//     #include "list_errors.inc"
-//     // There is undef inside "list_errors.inc"
-// };
+const char* const list_error_strings[]
+{
+    #define DEF_LIST_ERR(NAME, MESSAGE, ...) MESSAGE,
+    #include "list_errors.inc"
+    // There is undef inside "list_errors.inc"
+};
 
 struct List
 {
@@ -40,6 +42,8 @@ struct List
 
     int free;
 };
+
+const char* get_error_string(list_error err);
 
 list_error list_init(List* list);
 
