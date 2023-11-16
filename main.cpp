@@ -4,10 +4,12 @@
 
 int main()
 {
+    list_open_log_file();
+
     List list = {};
     add_log_file(stderr, LOG_LVL_TRACE);
 
-    FILE* test = fopen ("log_test.txt", "w");
+    FILE* test = fopen("log_test.log", "w");
     add_log_file(test, LOG_LVL_TRACE);
 
     list_init(&list);
@@ -23,6 +25,7 @@ int main()
     LOG_DEBUG("value = %d", value);
     list_delete_elem(&list, 0);
 
+    list_log(&list);
     generate_graph(&list);
 
     return 0;

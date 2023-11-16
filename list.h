@@ -63,4 +63,6 @@ list_error list_get_value(List* list, int idx, elem_t* value);
 
 list_error list_get_size(List* list, int* size);
 
+list_error list_linearize(List* list);
+
 #endif
