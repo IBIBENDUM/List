@@ -30,8 +30,6 @@ struct log_call_line_info
     struct tm*  time;
 };
 
-list_error generate_graph(const List* list);
-
 list_error list_log_internal(const List* list, log_call_line_info* line_info);
 
 #define list_log(LIST_PTR, ...)                       \

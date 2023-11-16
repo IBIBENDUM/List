@@ -23,9 +23,9 @@ int main()
 
 
     if (err != LIST_NO_ERR)
-        LOG_ERROR("%s\n", get_error_string(err));
+        LOG_ERROR("%s\n", get_error_msg(err));
     else
-        LOG_INFO("%s\n", get_error_string(err));
+        LOG_INFO("%s\n", get_error_msg(err));
 
     list_close_log_file();
 

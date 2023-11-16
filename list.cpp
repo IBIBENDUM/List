@@ -15,7 +15,9 @@
             return err;                     \
     } while (0)
 
-const char* get_error_string(list_error err)
+// BAH: ADD SWAP
+
+const char* get_error_msg(list_error err)
 {
     return list_error_strings[err];
 }
@@ -49,7 +51,15 @@ list_error list_verify(const List* list)
     return LIST_NO_ERR;
 }
 
-static void list_init_reserved_elem(List* list)
+
+/**
+ * @brief Initialize head element
+ *
+ * Set the index of the previous element to the last element in the list
+ * and the next element to the first element in the list
+ * @param list  - list pointer
+ */
+static void list_init_head_elem(List* list)
 {
     assert(list);
 
@@ -58,7 +68,13 @@ static void list_init_reserved_elem(List* list)
     list->prev[LIST_HEAD_INDEX] = (list->size)? list->size - 1 : LIST_HEAD_INDEX;
 }
 
-static void list_fill_with_poison(List* list, int start_idx)
+/**
+ * @brief Fill elements with poison values
+ *
+ * @param list      - list pointer
+ * @param start_idx - the index of the start of the poison filling
+ */
+static void list_fill_with_poison(List* list, const int start_idx)
 {
     assert(list);
 
@@ -76,19 +92,26 @@ list_error list_init(List* list)
     if (!list)
         return LIST_NULL_PTR;
 
-    *list = (List)  {.is_sorted = true};
+    *list = (List){.is_sorted = true};
 
     list_error err = list_realloc(list, LIST_MIN_CAPACITY);
     if (err != LIST_NO_ERR)
         return err;
 
-    list_init_reserved_elem(list);
+    list_init_head_elem(list);
 
     list_log(list);
 
     return LIST_NO_ERR;
 }
 
+/**
+ * @brief Get free element
+ *
+ * Get the first free element and change free index to the next free element
+ * @param  list  - list pointer
+ * @return index of first free element
+ */
 static int list_get_free_node_idx(List* list)
 {
     assert(list);
@@ -133,6 +156,12 @@ list_error list_realloc(List* list, int new_capacity)
     return LIST_NO_ERR;
 }
 
+/**
+ * @brief Resize list down
+ *
+ * @param  list  - list pointer
+ * @return errors returned by the verifier @see list_verify
+ */
 static list_error resize_down(List* list)
 {
     assert(list);
@@ -143,6 +172,12 @@ static list_error resize_down(List* list)
     return err;
 }
 
+/**
+ * @brief Resize list up
+ *
+ * @param  list  - list pointer
+ * @return errors returned by the verifier @see list_verify
+ */
 static list_error resize_up(List* list)
 {
     assert(list);
@@ -198,6 +233,12 @@ list_error list_push_back(List* list, const elem_t value)
     return list_insert_before(list, LIST_HEAD_INDEX, value);
 }
 
+/**
+ * @brief  Find out if an element is free
+ *
+ * @param  list - list pointer
+ * @return errors returned by the verifier @see list_verify
+ */
 static bool is_free_elem(List* list, const int idx)
 {
     assert(list);
@@ -207,6 +248,12 @@ static bool is_free_elem(List* list, const int idx)
     return false;
 }
 
+/**
+ * @brief  Make element free
+ *
+ * @param  list - list pointer
+ * @return errors returned by the verifier @see list_verify
+ */
 static list_error list_free_elem(List* list, const int idx)
 {
     LIST_VERIFY_AND_RETURN_IF_ERR(list);
@@ -227,7 +274,7 @@ list_error list_delete_elem(List* list, const int idx)
         return LIST_FREE_IDX;
 
     list_error err = LIST_NO_ERR;
-    if (list->size * (int)(LIST_CAPACITY_MULTIPLIER * LIST_CAPACITY_MULTIPLIER) < list->capacity)
+    if (LIST_MIN_CAPACITY < list->size && list->size * (int)(LIST_CAPACITY_MULTIPLIER * LIST_CAPACITY_MULTIPLIER) < list->capacity)
         err = resize_down(list);
 
     if (err != LIST_NO_ERR)
@@ -290,6 +337,7 @@ list_error list_linearize(List* list)
     if (list->is_sorted)
         return LIST_NO_ERR;
 
+    // BAH: ??????
     int*    new_prev_ptr = (int*)    calloc(list->capacity + 1, sizeof(new_prev_ptr[0]));
     elem_t* new_data_ptr = (elem_t*) calloc(list->capacity + 1, sizeof(new_data_ptr[0]));
     int*    new_next_ptr = (int*)    calloc(list->capacity + 1, sizeof(new_next_ptr[0]));
@@ -323,7 +371,7 @@ list_error list_linearize(List* list)
     list->next = new_next_ptr;
 
     list_fill_with_poison(list, list->size);
-    list_init_reserved_elem(list);
+    list_init_head_elem(list);
 
     list->next[list->size - 1] = L  IST_HEAD_INDEX;
     list->free = list->size;
