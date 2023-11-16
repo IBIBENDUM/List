@@ -3,7 +3,9 @@
 #include <stdio.h>
 
 #include "Libs/logs.h"
+#include "Libs/utils.h"
 #include "list.h"
+#include "list_logs.h"
 
 #define LIST_VERIFY_AND_RETURN_IF_ERR(LIST) \
     do                                      \
@@ -37,24 +39,42 @@ list_error list_verify(const List* list)
     return LIST_NO_ERR;
 }
 
+static void list_init_reserved_elem(List* list)
+{
+    assert(list);
+
+    list->next[LIST_HEAD_INDEX] = (list->size)? 0 : LIST_HEAD_INDEX;
+    list->data[LIST_HEAD_INDEX] = 0;
+    list->prev[LIST_HEAD_INDEX] = (list->size)? list->size : LIST_HEAD_INDEX;
+}
+
+static void list_fill_with_poison(List* list, int start_idx)
+{
+    assert(list);
+
+    for (int idx = start_idx; idx < list->capacity; idx++)
+    {
+        list->next[idx] = idx + 1;
+        list->prev[idx] = LIST_PREV_POISON;
+        list->data[idx] = LIST_POISON_VALUE;
+    }
+    list->next[list->capacity - 1] = LIST_HEAD_INDEX;
+}
+
 list_error list_init(List* list)
 {
     if (!list)
         return LIST_NULL_PTR;
 
-    *list = (List)  {
-                    .data = (elem_t*) 0 + 1, // BAH: ????
-                    .capacity = 0,
-                    .next = (int*) 0 + 1,
-                    .prev = (int*) 0 + 1,
-                    };
+    *list = (List)  {};
 
-    list_realloc(list, LIST_MIN_CAPACITY);
+    list_error err = list_realloc(list, LIST_MIN_CAPACITY);
+    if (err != LIST_NO_ERR)
+        return err;
 
-    // Reserved element initialize
-    list->prev[LIST_HEAD_INDEX] = LIST_HEAD_INDEX;
-    list->data[LIST_HEAD_INDEX] =  0;
-    list->next[LIST_HEAD_INDEX] = LIST_HEAD_INDEX;
+    list_init_reserved_elem(list);
+
+    list_log(list);
 
     return LIST_NO_ERR;
 }
@@ -64,7 +84,7 @@ static int list_get_free_node_idx(List* list)
     LIST_VERIFY_AND_RETURN_IF_ERR(list);
 
     const int idx = list->free;
-    list->free = list->next[idx];
+    list->free    = list->next[idx];
 
     return idx;
 }
@@ -72,35 +92,34 @@ static int list_get_free_node_idx(List* list)
 list_error list_realloc(List* list, int new_capacity)
 {
     assert(list);
-    // BAH: if new_capacity < old capacity?
+    if (new_capacity < list->capacity)
+        return LIST_WRONG_NEW_CAPACITY;
+
+    elem_t* old_data_ptr = (list->capacity == 0)? NULL : list->data - 1;
+    int*    old_prev_ptr = (list->capacity == 0)? NULL : list->prev - 1;
+    int*    old_next_ptr = (list->capacity == 0)? NULL : list->next - 1;
 
     // BAH: or check every ptr separately and stop immediately if NULL???
-    int*    prev_ptr = (int*)    realloc(list->prev - 1, (new_capacity + 1) * sizeof(prev_ptr[0]));
-    elem_t* data_ptr = (elem_t*) realloc(list->data - 1, (new_capacity + 1) * sizeof(data_ptr[0]));
-    int*    next_ptr = (int*)    realloc(list->next - 1, (new_capacity + 1) * sizeof(next_ptr[0]));
+    int*    prev_ptr = (int*)    realloc(old_prev_ptr, (new_capacity + 1) * sizeof(prev_ptr[0]));
+    elem_t* data_ptr = (elem_t*) realloc(old_data_ptr, (new_capacity + 1) * sizeof(data_ptr[0]));
+    int*    next_ptr = (int*)    realloc(old_next_ptr, (new_capacity + 1) * sizeof(next_ptr[0]));
 
-    if (!list->data || !list->prev || !list->next)
+    if (!prev_ptr || !data_ptr || !next_ptr)
     {
-        free(list->data);
-        free(list->prev);
-        free(list->next);
+        free_and_null(list->data);
+        free_and_null(list->prev);
+        free_and_null(list->next);
 
         return LIST_MEM_ALLOC_ERR;
     }
-
     list->prev = prev_ptr + 1;
     list->data = data_ptr + 1;
     list->next = next_ptr + 1;
 
-    for (int idx = list->capacity - 1; idx < new_capacity; idx++)
-    {
-        list->next[idx] = idx + 1;
-        list->prev[idx] = LIST_PREV_POISON;
-        list->data[idx] = LIST_POISON_VALUE;
-    }
-    list->next[new_capacity - 1] = LIST_HEAD_INDEX;
-
+    int old_capacity = list->capacity;
     list->capacity = new_capacity;
+
+    list_fill_with_poison(list, old_capacity);
 
     return LIST_NO_ERR;
 }
@@ -108,38 +127,36 @@ list_error list_realloc(List* list, int new_capacity)
 list_error list_insert_after(List* list, const int idx, const elem_t value)
 {
     LIST_VERIFY_AND_RETURN_IF_ERR(list);
-    // BAH: Check for negative position
 
     const int free_idx = list_get_free_node_idx(list);
     int* next_free = &list->next[idx];
 
-    list->prev[free_idx]  = idx;
-    list->data[free_idx]  = value;
-    list->next[free_idx]  = *next_free;
+    list->prev[free_idx]   = idx;
+    list->data[free_idx]   = value;
+    list->next[free_idx]   = *next_free;
 
     list->prev[*next_free] = free_idx;
     *next_free = free_idx;
 
     list->size++;
 
+    list_log(list);
+
     return LIST_NO_ERR;
 }
 
 list_error list_insert_before(List* list, const int idx, const elem_t value)
 {
-    // add checks
     return list_insert_after(list, list->prev[idx], value);
 }
 
 list_error list_push_front(List* list, const elem_t value)
 {
-    // add checks
     return list_insert_after(list, LIST_HEAD_INDEX, value);
 }
 
 list_error list_push_back(List* list, const elem_t value)
 {
-    // add checks
     return list_insert_before(list, LIST_HEAD_INDEX, value);
 }
 
@@ -148,6 +165,7 @@ static bool is_free_elem(List* list, const int idx)
     LIST_VERIFY_AND_RETURN_IF_ERR(list);
     if (list->prev[idx] == LIST_PREV_POISON)
         return true;
+
     return false;
 }
 
@@ -170,15 +188,16 @@ list_error list_delete_elem(List* list, const int idx)
     if (is_free_elem(list, idx))
         return LIST_FREE_IDX;
 
-    // BAH: Check is node free already?
-    const int prev_idx = list->prev[idx];
-    const int next_idx = list->next[idx];
+    const int prev_idx   = list->prev[idx];
+    const int next_idx   = list->next[idx];
     list->next[prev_idx] = list->next[idx];
     list->prev[next_idx] = list->prev[idx];
 
     list_free_elem(list, idx);
 
     list->size--;
+
+    list_log(list);
 
     return LIST_NO_ERR;
 }
@@ -209,41 +228,69 @@ list_error list_destruct(List* list)
         return LIST_NULL_PTR;
 
     // BAH: is free NULL ok?
-    free(list->data - 1);
-    free(list->prev - 1);
-    free(list->next - 1);
+    free_and_null(list->data - 1);
+    free_and_null(list->prev - 1);
+    free_and_null(list->next - 1);
     *list = {};
 
     return LIST_NO_ERR;
 }
 
+// static void list_linearize_indexes(List* list)
+// {
+//     assert(list);
+//
+//     int physical_idx = list->next[LIST_HEAD_INDEX];
+//     for (int idx = 0; idx < list->size; idx++)
+//     {
+//         list->prev[idx] = idx - 1;
+//         list->data[idx] = list->data[physical_idx];
+//         list->next[idx] = idx + 1;
+//         physical_idx    = list->next[physical_idx];
+//     }
+// }
+
 list_error list_linearize(List* list)
 {
     LIST_VERIFY_AND_RETURN_IF_ERR(list);
 
-    // BAH: check for empty list or something like that
     int*    new_prev_ptr = (int*)    calloc(list->capacity + 1, sizeof(new_prev_ptr[0]));
     elem_t* new_data_ptr = (elem_t*) calloc(list->capacity + 1, sizeof(new_data_ptr[0]));
     int*    new_next_ptr = (int*)    calloc(list->capacity + 1, sizeof(new_next_ptr[0]));
 
     if (!new_prev_ptr || !new_data_ptr || !new_next_ptr)
+    {
+        free_and_null(new_prev_ptr);
+        free_and_null(new_data_ptr);
+        free_and_null(new_next_ptr);
+
         return LIST_MEM_ALLOC_ERR;
+    }
+
+    new_prev_ptr++;
+    new_data_ptr++;
+    new_next_ptr++;
 
     int physical_idx = list->next[LIST_HEAD_INDEX];
-    for (int idx = 0; idx != list->prev[LIST_HEAD_INDEX]; idx++)
+    for (int idx = 0; idx < list->size; idx++)
     {
         new_prev_ptr[idx] = idx - 1;
         new_data_ptr[idx] = list->data[physical_idx];
         new_next_ptr[idx] = idx + 1;
-        physical_idx    = list->next[idx];
+        physical_idx = list->next[physical_idx];
     }
-
-    new_next_ptr[LIST_HEAD_INDEX] = list->size;
-    new_next_ptr[list->size] = LIST_HEAD_INDEX;
 
     list->data = new_data_ptr;
     list->prev = new_prev_ptr;
     list->next = new_next_ptr;
+
+    // list_linearize_indexes(list);
+    list_fill_with_poison(list, list->size);
+    list_init_reserved_elem(list);
+
+    list->next[list->size - 1] = LIST_HEAD_INDEX;
+
+    list_log(list);
 
     return LIST_NO_ERR;
 }

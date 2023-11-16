@@ -18,9 +18,9 @@ struct Log_file
     log_level level;
 };
 
-const size_t       MAX_LOG_FILES_AMOUNT  = 8;
+const size_t       MAX_LOG_FILES_AMOUNT  =  8;
 Log_file LOG_FILES[MAX_LOG_FILES_AMOUNT] = {};
-size_t             log_files_amount      = 0;
+size_t             log_files_amount      =  1;
 
 const char* log_levels_colors[] =
 {

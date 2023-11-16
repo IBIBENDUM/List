@@ -93,7 +93,7 @@ static void write_graph_header(FILE* file_ptr)
 {
     print("digraph G{\n");
     print("rankdir = LR;\n");
-    print("graph [splines=ortho];");
+    print("graph [splines=ortho];\n");
     print("bgcolor = \"#" COLOR_FORMAT "\";\n", BG_COLOR);
 }
 

@@ -10,4 +10,5 @@ DEF_LIST_ERR(LIST_FREE_IDX_OUT_OF_RANGE, "List index is out of range")
 DEF_LIST_ERR(LIST_FREE_IDX, "Element is free")
 DEF_LIST_ERR(LIST_COULDNT_CREATE_LOG_FOLDER, "Couldn't create log folder")
 DEF_LIST_ERR(LIST_FILE_CLOSE_ERR, "Error at file closing")
+DEF_LIST_ERR(LIST_WRONG_NEW_CAPACITY, "New capacity is smaller than the old one")
 #undef DEF_LIST_ERR
