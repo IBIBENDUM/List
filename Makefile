@@ -1,4 +1,4 @@
-.PHONY: clean run rerun
+.PHONY: clean run full_recompile
 
 ifdef OS
    RM = del /Q
@@ -23,7 +23,7 @@ LIBS_OBJS = $(patsubst %.cpp, %.o, $(LIBS_SRCS))
 OBJS = $(PROGRAM_OBJS) $(LIBS_OBJS)
 
 compile: $(BUILD_DIR) $(EXECUTABLE)
-rerun: clean compile run
+full_recompile: clean compile run
 
 $(EXECUTABLE): $(OBJS)
 	g++ $^ $(CFLAGS) -o $@

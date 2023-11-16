@@ -15,9 +15,9 @@
             return err;                     \
     } while (0)
 
-// BAH: ADD SWAP
+// BAH: ADD SWAP, REVERSES
 
-const char* get_error_msg(list_error err)
+const char* list_get_error_msg(list_error err)
 {
     return list_error_strings[err];
 }
@@ -92,7 +92,7 @@ list_error list_init(List* list)
     if (!list)
         return LIST_NULL_PTR;
 
-    *list = (List){.is_sorted = true};
+    *list = (List){.is_linear = true};
 
     list_error err = list_realloc(list, LIST_MIN_CAPACITY);
     if (err != LIST_NO_ERR)
@@ -211,7 +211,7 @@ list_error list_insert_after(List* list, const int idx, const elem_t value)
     list->size++;
 
     if (list->next[LIST_HEAD_INDEX] != 0)
-        list->is_sorted = false;
+        list->is_linear = false;
 
     list_log(list);
 
@@ -280,7 +280,7 @@ list_error list_delete_elem(List* list, const int idx)
     if (err != LIST_NO_ERR)
         return err;
 
-    list->is_sorted = false;
+    list->is_linear = false;
 
     const int prev_idx   = list->prev[idx];
     const int next_idx   = list->next[idx];
@@ -334,7 +334,7 @@ list_error list_linearize(List* list)
 {
     LIST_VERIFY_AND_RETURN_IF_ERR(list);
 
-    if (list->is_sorted)
+    if (list->is_linear)
         return LIST_NO_ERR;
 
     // BAH: ??????
@@ -375,7 +375,7 @@ list_error list_linearize(List* list)
 
     list->next[list->size - 1] = LIST_HEAD_INDEX;
     list->free = list->size;
-    list->is_sorted = true;
+    list->is_linear = true;
 
     list_log(list);
 

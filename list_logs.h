@@ -57,4 +57,10 @@ list_error list_open_log_file();
  */
 list_error list_close_log_file();
 
+/**
+ * @brief Set list log status (enabled/disabled)
+ *
+ */
+void list_set_log_status(bool status);
+
 #endif

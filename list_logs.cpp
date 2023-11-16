@@ -16,11 +16,15 @@
 #define COLOR_FORMAT "%06X"
 #define NODE_SETTINGS_FORMAT "[color = \"#" COLOR_FORMAT "\", weight = %d]\n"
 
-const size_t IMAGE_WIDTH = 1500;
-
 const size_t GRAPH_MAX_PATH_LEN = 128;
-FILE* log_file_ptr = NULL;
-size_t graph_idx = 1;
+FILE* log_file_ptr              = NULL;
+size_t graph_idx                = 1;
+bool log_is_enabled             = 1;
+
+void list_set_log_status(const bool status)
+{
+    log_is_enabled = status;
+}
 
 static void write_node_info(FILE* file_ptr, const List* list, const int idx)
 {
@@ -49,7 +53,8 @@ static void write_node_settings(FILE* file_ptr)
 {
     assert(file_ptr);
 
-    print("[shape = Mrecord, style = filled, fillcolor = \"#" COLOR_FORMAT "\", color = \"#" COLOR_FORMAT "\", label = ",
+    print("[shape = Mrecord, style = filled, fillcolor = \"#"\
+          COLOR_FORMAT "\", color = \"#" COLOR_FORMAT "\", label = ",
           FILL_COLOR, OUTLINE_COLOR);
 }
 
@@ -71,16 +76,16 @@ static void write_head_info(FILE* file_ptr, const List* list)
     assert(file_ptr);
     assert(list);
 
-   print("\"{CAPACITY: %d}|{SIZE: %d}|{IS_SORTED: %s}|{FREE_IDX: %d}\"]",
-          list->capacity, list->size, (list->is_sorted)? "true" : "false", list->free);
+   print("\"{CAPACITY: %d}|{SIZE: %d}|{IS_LINEAR: %s}|{FREE_IDX: %d}\"]",
+          list->capacity, list->size, (list->is_linear)? "true" : "false", list->free);
 }
 
-static void write_head_node(FILE* file_ptr, const List* list)
+static void write_header_info(FILE* file_ptr, const List* list)
 {
     assert(list);
     assert(file_ptr);
 
-    print("HEAD");
+    print("HEADER");
     write_node_settings(file_ptr);
     write_head_info(file_ptr, list);
     print("\n");
@@ -91,13 +96,13 @@ static void link_nodes_straight(FILE* file_ptr, const List* list)
     assert(list);
     assert(file_ptr);
 
-    print("HEAD -> ");
+    print("HEADER -> ");
     for (int i = -1; i < list->capacity - 1; i++)
     {
         print("%d -> ", i);
     }
     print("%d ", list->capacity - 1);
-    print(NODE_SETTINGS_FORMAT, BG_COLOR, 1000);
+    print(NODE_SETTINGS_FORMAT, BG_COLOR, 1);
 }
 
 static void link_nodes_forward(FILE* file_ptr, const List* list)
@@ -109,6 +114,8 @@ static void link_nodes_forward(FILE* file_ptr, const List* list)
     {
         print("%d -> %d ", i, list->next[i]);
         print(NODE_SETTINGS_FORMAT, NEXT_COLOR, 0);
+        if (list->prev[i] == LIST_PREV_POISON)
+            print("[style = dashed]");
     }
     print("\n");
 }
@@ -201,7 +208,7 @@ static list_error generate_graph(const List* list)
         return err;
 
     write_graph_header(file_ptr);
-    write_head_node(file_ptr, list);
+    write_header_info(file_ptr, list);
     write_node(file_ptr, list);
     link_nodes_straight(file_ptr, list);
     link_nodes_forward(file_ptr, list);
@@ -284,6 +291,9 @@ static void write_event_header(log_call_line_info* line_info)
 
 list_error list_log_internal(const List* list, log_call_line_info* line_info)
 {
+    if(!log_is_enabled)
+        return LIST_NO_ERR;
+
     if (!list)
     {
         log_color(MSG_ERROR_COLOR, "ERROR: NULL list pointer\n");

@@ -10,9 +10,7 @@ int main()
     List list = {};
 
     add_log_file(stderr, LOG_LVL_TRACE);
-
     err = list_init(&list);
-    err = list_realloc(&list, 40);
     err = list_push_back(&list, 2);
     err = list_push_back(&list, 2);
     err = list_delete_elem(&list, 0);
@@ -23,9 +21,9 @@ int main()
 
 
     if (err != LIST_NO_ERR)
-        LOG_ERROR("%s\n", get_error_msg(err));
+        LOG_ERROR("%s\n", list_get_error_msg(err));
     else
-        LOG_INFO("%s\n", get_error_msg(err));
+        LOG_INFO("%s\n", list_get_error_msg(err));
 
     list_close_log_file();
 

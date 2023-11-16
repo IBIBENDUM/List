@@ -28,7 +28,7 @@ struct List
     int  capacity;  ///< Current allocated amount of memory for elements
                     ///  (expandable if necessary @see LIST_CAPACITY_MULTIPLIER)
 
-    bool is_sorted; ///< True if the index of the element in memory matches its position in the list
+    bool is_linear; ///< True if the index of the element in memory matches its position in the list
 
     int* next;      ///< Array of indexes on the next elements
     int* prev;      ///< Array of indexes on the previous elements
@@ -41,7 +41,7 @@ struct List
  *
  * @return error message string pointer
  */
-const char* get_error_msg(list_error err);
+const char* list_get_error_msg(list_error err);
 
 /**
  * @brief  Initialize list
