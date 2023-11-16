@@ -13,11 +13,11 @@ void free_and_null(void* pointer)
 
 bool create_folder(const char* path)
 {
-    bool err = false;
+    int err = false;
     #ifdef _WIN32
         err = mkdir(path);
     #else
-        const mode_t mode = 0730;
+        const mode_t mode = 0755;
         err = mkdir(path, mode);
     #endif
 
