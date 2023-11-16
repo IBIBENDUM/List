@@ -373,7 +373,7 @@ list_error list_linearize(List* list)
     list_fill_with_poison(list, list->size);
     list_init_head_elem(list);
 
-    list->next[list->size - 1] = L  IST_HEAD_INDEX;
+    list->next[list->size - 1] = LIST_HEAD_INDEX;
     list->free = list->size;
     list->is_sorted = true;
 
