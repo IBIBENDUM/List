@@ -1,5 +1,8 @@
+#ifdef _WIN32
+    #include <io.h>
+#endif
 #include <stdio.h>
-#include <io.h>
+#include <unistd.h>
 #include <time.h>
 #include <assert.h>
 #include <stdarg.h>

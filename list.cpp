@@ -274,7 +274,7 @@ list_error list_delete_elem(List* list, const int idx)
         return LIST_FREE_IDX;
 
     list_error err = LIST_NO_ERR;
-    if (LIST_MIN_CAPACITY < list->size && list->size * (int)(LIST_CAPACITY_MULTIPLIER * LIST_CAPACITY_MULTIPLIER) < list->capacity)
+    if ((int) LIST_MIN_CAPACITY < list->size && list->size * (int)(LIST_CAPACITY_MULTIPLIER * LIST_CAPACITY_MULTIPLIER) < list->capacity)
         err = resize_down(list);
 
     if (err != LIST_NO_ERR)

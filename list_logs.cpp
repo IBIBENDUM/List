@@ -179,14 +179,14 @@ static list_error open_graph_file(FILE** file_ptr)
 
 static void clear_log_files()
 {
-    #if _WIN32
+    #ifdef _WIN32
         system("del /s /q " LOG_FOLDER_NAME);
     #else
         system("rm -r" LOG_FOLDER_NAME);
     #endif
 }
 
-list_error generate_graph(const List* list)
+static list_error generate_graph(const List* list)
 {
     assert(list);
     list_error err = LIST_NO_ERR;

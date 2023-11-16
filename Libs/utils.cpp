@@ -14,7 +14,7 @@ void free_and_null(void* pointer)
 bool create_folder(const char* path)
 {
     bool err = false;
-    #if _WIN32
+    #ifdef _WIN32
         err = mkdir(path);
     #else
         const mode_t mode = 0730;
