@@ -4,15 +4,7 @@
 #include <stddef.h>
 #include <limits.h>
 
-typedef int elem_t;
-#define ELEM_FORMAT "%d"
-
-const float  LIST_CAPACITY_MULTIPLIER = 2; ///< coefficient of increase (decrease) of list capacity
-
-const size_t LIST_MIN_CAPACITY = 8;        ///< minimum list capacity (same after initialization)
-const elem_t LIST_POISON_VALUE = INT_MAX;  ///< poison for element value
-const int    LIST_PREV_POISON  = -2;       ///< poison for previous element index
-const int    LIST_HEAD_INDEX   = -1;       ///< head element index
+#include "list_config.h"
 
 // BAH: make something
 enum list_error
