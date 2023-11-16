@@ -25,8 +25,14 @@ int main()
     LOG_DEBUG("value = %d", value);
     list_delete_elem(&list, 0);
 
+    list_log(NULL);
+    list_log(&list);
+    list_log(&list);
+    list_log(&list);
     list_log(&list);
     generate_graph(&list);
+
+    list_close_log_file();
 
     return 0;
 }
