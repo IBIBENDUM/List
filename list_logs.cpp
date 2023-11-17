@@ -261,7 +261,7 @@ static void compile_graph()
 static void add_image_to_log()
 {
     const char* png_path = get_file_graph_path(LOG_IMGS_FOLDER_NAME "/", "png");
-    log("\n<img src = \"%s\", width= \"%llu\">\n", png_path, IMAGE_WIDTH);
+    log("\n<img src = \"%s\", height= \"%llu\">\n", png_path, IMAGE_HEIGHT);
 }
 
 static list_error write_graph(const List* list)

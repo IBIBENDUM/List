@@ -15,7 +15,7 @@
             return err;                     \
     } while (0)
 
-// BAH: ADD SWAP, REVERSES
+// BAH: ADD SWAP, REVERSE
 
 const char* list_get_error_msg(list_error err)
 {

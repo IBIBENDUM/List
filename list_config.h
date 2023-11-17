@@ -20,7 +20,7 @@ const int    LIST_HEAD_INDEX   = -1;       ///< head element index
 #define LOG_GRAPH_NAME          "graph"    ///< graph file (name without extension)
 #define LOG_FILE_NAME           "list_log" ///< log file (name without extension)
 
-const size_t IMAGE_WIDTH       = 1500; ///< Images width in pixels in html file
+const size_t IMAGE_HEIGHT      = 75; ///< Images height in html file
 
 // Graphviz graph colors
 const int BG_COLOR             = 0xFFFFFF;
