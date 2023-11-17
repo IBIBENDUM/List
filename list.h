@@ -50,7 +50,7 @@ const char* list_get_error_msg(list_error err);
  * @param  list  - list pointer
  * @return
  *         LIST_NO_ERR        - no error occurred
- *         LIST_NULL_PTR      - list pointer is null
+ *         LIST_NULL_PTR_ERR      - list pointer is null
  *         LIST_MEM_ALLOC_ERR - memory allocation error during resize
  */
 list_error list_init(List* list);
@@ -61,14 +61,14 @@ list_error list_init(List* list);
  * @param  list  - list pointer
  * @return
  *         LIST_NO_ERR                - no error occurred
- *         LIST_NULL_PTR              - list pointer is null
- *         LIST_NULL_DATA_ARR_PTR     - data pointer is null
- *         LIST_NULL_PREV_ARR_PTR     - prev pointer is null
- *         LIST_NULL_NEXT_ARR_PTR     - next pointer is null
- *         LIST_NEGATIVE_SIZE_ERR     - list size is below zero
- *         LIST_NEGATIVE_CAPACITY_ERR - list capacity is below zero
- *         LIST_NEGATIVE_FREE_IDX     - free index is below zero
- *         LIST_FREE_IDX_OUT_OF_RANGE - free index grater than capacity
+ *         LIST_NULL_PTR_ERR              - list pointer is null
+ *         LIST_NULL_DATA_ARR_PTR_ERR     - data pointer is null
+ *         LIST_NULL_PREV_ARR_PTR_ERR     - prev pointer is null
+ *         LIST_NULL_NEXT_ARR_PTR_ERR     - next pointer is null
+ *         LIST_NEGATIVE_SIZE_ERR         - list size is below zero
+ *         LIST_NEGATIVE_CAPACITY_ERR     - list capacity is below zero
+ *         LIST_NEGATIVE_FREE_IDX_ERR     - free index is below zero
+ *         LIST_FREE_IDX_OUT_OF_RANGE_ERR - free index grater than capacity
  */
 list_error list_verify(const List* list);
 
@@ -79,7 +79,7 @@ list_error list_realloc(List* list, int new_capacity);
  *
  * @return
  *         LIST_NO_ERR        - no error occurred
- *         LIST_NULL_PTR      - list pointer is null
+ *         LIST_NULL_PTR_ERR      - list pointer is null
  */
 list_error list_destruct(List* list);
 

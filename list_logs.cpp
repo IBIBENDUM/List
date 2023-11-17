@@ -310,7 +310,7 @@ list_error list_log_internal(const List* list, log_call_line_info* line_info)
     if (!list)
     {
         log_color(MSG_ERROR_COLOR, "ERROR: NULL list pointer\n");
-        return LIST_NULL_PTR;
+        return LIST_NULL_PTR_ERR;
     }
     write_event_header(line_info);
     write_graph(list, line_info);

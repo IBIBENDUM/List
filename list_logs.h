@@ -35,7 +35,7 @@ struct log_call_line_info
  * @param  line_info
  * @return
  *         LIST_NO_ERR    - no error occurred
- *         LIST_NULL_PTR  - list pointer is NULL
+ *         LIST_NULL_PTR_ERR  - list pointer is NULL
  */
 list_error list_log_internal(const List* list, log_call_line_info* line_info);
 

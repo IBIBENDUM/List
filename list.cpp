@@ -26,16 +26,16 @@ const char* list_get_error_msg(list_error err)
 list_error list_verify(const List* list)
 {
     if (list == NULL)
-        return LIST_NULL_PTR;
+        return LIST_NULL_PTR_ERR;
 
     if (list->data == NULL)
-        return LIST_NULL_DATA_ARR_PTR;
+        return LIST_NULL_DATA_ARR_PTR_ERR;
 
     if (list->prev == NULL)
-        return LIST_NULL_PREV_ARR_PTR;
+        return LIST_NULL_PREV_ARR_PTR_ERR;
 
     if (list->next == NULL)
-        return LIST_NULL_NEXT_ARR_PTR;
+        return LIST_NULL_NEXT_ARR_PTR_ERR;
 
     if (list->size < 0)
         return LIST_NEGATIVE_SIZE_ERR;
@@ -44,10 +44,10 @@ list_error list_verify(const List* list)
         return LIST_NEGATIVE_CAPACITY_ERR;
 
     if (list->free < 0)
-        return LIST_NEGATIVE_FREE_IDX;
+        return LIST_NEGATIVE_FREE_IDX_ERR;
 
     if (list->free > list->capacity)
-        return LIST_FREE_IDX_OUT_OF_RANGE;
+        return LIST_FREE_IDX_OUT_OF_RANGE_ERR;
 
     return LIST_NO_ERR;
 }
@@ -91,7 +91,7 @@ static void list_fill_with_poison(List* list, const int start_idx)
 list_error list_init(List* list)
 {
     if (!list)
-        return LIST_NULL_PTR;
+        return LIST_NULL_PTR_ERR;
 
     *list = (List){.is_linear = true};
 
@@ -191,6 +191,9 @@ static list_error resize_up(List* list)
 list_error list_insert_after(List* list, const int idx, const elem_t value)
 {
     LIST_VERIFY_AND_RETURN_IF_ERR(list);
+
+    if (idx < LIST_HEAD_INDEX)
+        return LIST_IDX_OUT_OF_RANGE_ERR;
 
     list_error err = LIST_NO_ERR;
     if (list->size + 1 >= list->capacity)
@@ -320,7 +323,7 @@ list_error list_get_size(List* list, int* size)
 list_error list_destruct(List* list)
 {
     if (!list)
-        return LIST_NULL_PTR;
+        return LIST_NULL_PTR_ERR;
 
     // BAH: is free NULL ok?
     free_and_null(list->data - 1);
@@ -338,7 +341,8 @@ list_error list_linearize(List* list)
     if (list->is_linear)
         return LIST_NO_ERR;
 
-    // BAH: ???
+    // BAH: Reallocation or swap elements???
+    // BAH: How to remove copypaste???
     int*    new_prev_ptr = (int*)    calloc(list->capacity + 1, sizeof(new_prev_ptr[0]));
     elem_t* new_data_ptr = (elem_t*) calloc(list->capacity + 1, sizeof(new_data_ptr[0]));
     int*    new_next_ptr = (int*)    calloc(list->capacity + 1, sizeof(new_next_ptr[0]));

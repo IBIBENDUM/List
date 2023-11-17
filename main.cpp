@@ -10,19 +10,17 @@ int main(const int argc, char* const* argv)
         return 1;
 
     list_error err = LIST_NO_ERR;
-    err = list_open_log_file();
+    list_open_log_file();
 
     List list = {};
-
-    err = list_init(&list);
-    err = list_push_back(&list, 2);
-    err = list_push_back(&list, 2);
-    err = list_delete_elem(&list, 0);
-    err = list_linearize(&list);
-    err = list_push_back(&list, 2);
-    err = list_push_back(&list, 3);
+    list_init(&list);
+    list_push_back(&list, 2);
+    list_push_back(&list, 2);
+    list_delete_elem(&list, 0);
+    list_linearize(&list);
+    list_push_back(&list, 2);
+    list_push_back(&list, 3);
     err = list_push_front(&list, 5);
-
 
     if (err != LIST_NO_ERR)
         LOG_ERROR("%s\n", list_get_error_msg(err));
