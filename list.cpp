@@ -17,6 +17,7 @@
 
 // BAH: ADD SWAP, REVERSE
 
+// BAH: Maybe move to utils?
 const char* list_get_error_msg(list_error err)
 {
     return list_error_strings[err];
@@ -337,7 +338,7 @@ list_error list_linearize(List* list)
     if (list->is_linear)
         return LIST_NO_ERR;
 
-    // BAH: ??????
+    // BAH: ???
     int*    new_prev_ptr = (int*)    calloc(list->capacity + 1, sizeof(new_prev_ptr[0]));
     elem_t* new_data_ptr = (elem_t*) calloc(list->capacity + 1, sizeof(new_data_ptr[0]));
     int*    new_next_ptr = (int*)    calloc(list->capacity + 1, sizeof(new_next_ptr[0]));

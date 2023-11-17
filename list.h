@@ -21,7 +21,7 @@ const char* const list_error_strings[]
     // There is undef inside "list_errors.inc"
 };
 
-// BAH: Ask about struct for arrays
+// BAH: Ask about struct for arrays???
 struct List
 {
     elem_t* data;   ///< Elements values array

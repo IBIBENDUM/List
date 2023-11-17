@@ -249,7 +249,7 @@ static void compile_graph()
 {
     char terminal_command[GRAPH_MAX_PATH_LEN] = "";
 
-    const char* dot_path = get_file_graph_path(LOG_FOLDER_NAME "/" LOG_DOTS_FOLDER_NAME "/", "dot");
+    const char* dot_path  = get_file_graph_path(LOG_FOLDER_NAME "/" LOG_DOTS_FOLDER_NAME "/", "dot");
     size_t symbols_amount = sprintf(terminal_command, "dot -Tpng %s ", dot_path);
 
     const char* png_path = get_file_graph_path(LOG_FOLDER_NAME "/" LOG_IMGS_FOLDER_NAME "/", "png");
@@ -299,7 +299,6 @@ list_error list_log_internal(const List* list, log_call_line_info* line_info)
         log_color(MSG_ERROR_COLOR, "ERROR: NULL list pointer\n");
         return LIST_NULL_PTR;
     }
-
     write_event_header(line_info);
     write_graph(list);
 

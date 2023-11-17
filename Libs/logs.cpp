@@ -135,12 +135,18 @@ void init_log(const log_level log_level, const char* file, const char* func, con
 
     for (size_t i = 0; i < log_files_amount; i++)
     {
-        if (!log_mute && LOG_FILES[i].level >= current_log_level)
+        // if (!log_mute && LOG_FILES[i].level >= current_log_level)
+        // {
+        if (!log_mute)
         {
+            if (log_level >= current_log_level)
+            {
             init_event(&log_info);
             va_start(log_info.args, format);
-            write_log(&log_info, LOG_FILES[i].file_ptr);
+            write_log(&log_info, stderr);
             va_end(log_info.args);
+            }
         }
+        // }
     }
 }

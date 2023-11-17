@@ -1,15 +1,19 @@
 #include "Libs/logs.h"
+#include "Libs/console_args.h"
 #include "list.h"
 #include "list_logs.h"
 
-int main()
+int main(const int argc, char* const* argv)
 {
+    Args_values values = {};
+    if (!handle_cmd_args(argc, argv, "i:o:l:m:h", &values))
+        return 1;
+
     list_error err = LIST_NO_ERR;
     err = list_open_log_file();
 
     List list = {};
 
-    add_log_file(stderr, LOG_LVL_TRACE);
     err = list_init(&list);
     err = list_push_back(&list, 2);
     err = list_push_back(&list, 2);
