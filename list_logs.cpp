@@ -148,12 +148,25 @@ static list_error create_log_folders()
 
     return LIST_NO_ERR;
 }
+static void write_graph_label(FILE* file_ptr, log_call_line_info* line_info)
+{
+    assert(file_ptr);
+    assert(line_info);
 
-static void write_graph_header(FILE* file_ptr)
+    const char* time_str = cast_time_to_str(line_info->time);
+    print("[label = \"");
+    print("[%s] ", time_str);
+    print("%s:%s:%d", line_info->file, line_info->func, line_info->line);
+    print("\"]\n");
+}
+
+static void write_graph_header(FILE* file_ptr, log_call_line_info* line_info)
 {
     print("digraph G{\n");
     print("rankdir = LR;\n");
-    print("graph [splines=ortho];\n");
+    print("graph [splines = ortho]");
+    write_graph_label(file_ptr, line_info);
+    print(";\n");
     print("bgcolor = \"#" COLOR_FORMAT "\";\n", BG_COLOR);
 }
 
@@ -193,7 +206,7 @@ static void clear_log_files()
     #endif
 }
 
-static list_error generate_graph(const List* list)
+static list_error generate_graph(const List* list, log_call_line_info* line_info)
 {
     assert(list);
     list_error err = LIST_NO_ERR;
@@ -207,7 +220,7 @@ static list_error generate_graph(const List* list)
     if (err != LIST_NO_ERR)
         return err;
 
-    write_graph_header(file_ptr);
+    write_graph_header(file_ptr, line_info);
     write_header_info(file_ptr, list);
     write_node(file_ptr, list);
     link_nodes_straight(file_ptr, list);
@@ -264,11 +277,11 @@ static void add_image_to_log()
     log("\n<img src = \"%s\", height= \"%llu\">\n", png_path, IMAGE_HEIGHT);
 }
 
-static list_error write_graph(const List* list)
+static list_error write_graph(const List* list, log_call_line_info* line_info)
 {
     assert(list);
 
-    list_error err = generate_graph(list);
+    list_error err = generate_graph(list, line_info);
     if (err != LIST_NO_ERR)
         return err;
 
@@ -300,7 +313,7 @@ list_error list_log_internal(const List* list, log_call_line_info* line_info)
         return LIST_NULL_PTR;
     }
     write_event_header(line_info);
-    write_graph(list);
+    write_graph(list, line_info);
 
     log("\n\n");
 

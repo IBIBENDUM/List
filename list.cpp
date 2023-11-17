@@ -199,8 +199,8 @@ list_error list_insert_after(List* list, const int idx, const elem_t value)
     if (err != LIST_NO_ERR)
         return err;
 
-    const int free_idx = list_get_free_node_idx(list);
-    int* next_free = &list->next[idx];
+    const int free_idx     = list_get_free_node_idx(list);
+    int*      next_free    = &list->next[idx];
 
     list->prev[free_idx]   = idx;
     list->data[free_idx]   = value;
