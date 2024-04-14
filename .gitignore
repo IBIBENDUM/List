@@ -1,9 +1,11 @@
 *.o
+*.d
 *.exe
-Build
 *.png
 *.dot
 *.log
 *.html
 log
 *.html
+list
+
